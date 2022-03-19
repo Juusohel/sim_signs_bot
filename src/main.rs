@@ -5,10 +5,22 @@ use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
-use serenity::framework::StandardFramework;
+use serenity::framework::standard::{
+    StandardFramework,
+    CommandResult,
+    macros::{
+        command,
+        group
+    }
+};
+
 
 const HELP_MSG: &str = "Hello I am help";
 const HELP_CMD: &str = "!help";
+
+#[group]
+#[commands(ping, test)]
+struct General;
 
 struct MessageHandler;
 
@@ -33,7 +45,9 @@ async fn main() {
         .expect("No token found");
 
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("!"));
+        .configure(|c| c.prefix("!"))
+        .group(&GENERAL_GROUP);
+
 
 
     let mut client = Client::builder(&token)
@@ -47,3 +61,16 @@ async fn main() {
     }
 }
 
+#[command]
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.reply(ctx, "Pong!").await?;
+
+    Ok(())
+}
+
+#[command]
+async fn test(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.reply(ctx, "Hello test reply").await?;
+
+    Ok(())
+}
