@@ -19,7 +19,7 @@ const HELP_MSG: &str = "Hello I am help";
 const HELP_CMD: &str = "!help";
 
 #[group]
-#[commands(ping, test)]
+#[commands(ping, test, uwu)]
 struct General;
 
 struct MessageHandler;
@@ -45,7 +45,7 @@ async fn main() {
         .expect("No token found");
 
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("!"))
+        .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP);
 
 
@@ -71,6 +71,13 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 async fn test(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(ctx, "Hello test reply").await?;
+
+    Ok(())
+}
+
+#[command]
+async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.reply(ctx, "UwU").await?;
 
     Ok(())
 }
