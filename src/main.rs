@@ -12,7 +12,7 @@ const HELP_CMD: &str = "!help";
 struct MessageHandler;
 
 #[async_trait]
-impl EventHandler for Message_Handler {
+impl EventHandler for MessageHandler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content == HELP_CMD {
             if let Err(error) = msg.channel_id.say(&ctx.http, HELP_MSG).await {
@@ -31,12 +31,12 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN")
         .expect("No token found");
 
-    let mut client = Client::new(&token)
+    let mut client = Client::builder(&token)
         .event_handler(MessageHandler)
         .await
         .expect("Error creating client");
 
-    if let Err(error) = client.start().away {
+    if let Err(error) = client.start().await {
         println!("Client error {:?}", error)
     }
 }
