@@ -5,6 +5,7 @@ use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
+use serenity::framework::StandardFramework;
 
 const HELP_MSG: &str = "Hello I am help";
 const HELP_CMD: &str = "!help";
@@ -31,8 +32,13 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN")
         .expect("No token found");
 
+    let framework = StandardFramework::new()
+        .configure(|c| c.prefix("!"));
+
+
     let mut client = Client::builder(&token)
         .event_handler(MessageHandler)
+        .framework(framework)
         .await
         .expect("Error creating client");
 
@@ -40,3 +46,4 @@ async fn main() {
         println!("Client error {:?}", error)
     }
 }
+
