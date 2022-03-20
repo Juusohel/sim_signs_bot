@@ -13,7 +13,7 @@ use serenity::framework::standard::{
         group
     }
 };
-
+use tokio_postgres::{NoTls, Error};
 
 const HELP_MSG: &str = "Hello I am help";
 const HELP_CMD: &str = "!help";
@@ -44,19 +44,27 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN")
         .expect("No token found");
 
+    //let db_name = env::var("DB_NAME")
+        //.expect("Database name not found, environment variable set?");
+
+    let (db_client, db_connection) =
+        tokio_postgres::connect(
+            "placeholder"
+            ,NoTls)
+            .await
+            .expect("Connection Failed");
+
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP);
 
-
-
-    let mut client = Client::builder(&token)
+    let mut discord_client = Client::builder(&token)
         .event_handler(MessageHandler)
         .framework(framework)
         .await
         .expect("Error creating client");
 
-    if let Err(error) = client.start().await {
+    if let Err(error) = discord_client.start().await {
         println!("Client error {:?}", error)
     }
 }
