@@ -44,12 +44,12 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN")
         .expect("No token found");
 
-    //let db_name = env::var("DB_NAME")
-        //.expect("Database name not found, environment variable set?");
+    let db_connection_string = env::var("DB_CONNECTION")
+        .expect("Database connection string not found, environment variable set?");
 
     let (db_client, db_connection) =
         tokio_postgres::connect(
-            "placeholder"
+            &db_connection_string
             ,NoTls)
             .await
             .expect("Connection Failed");
