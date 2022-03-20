@@ -1,31 +1,27 @@
 use std::env;
 
+use serenity::framework::standard::{
+    macros::{command, group},
+    CommandResult, StandardFramework,
+};
 use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
-use serenity::framework::standard::{
-    StandardFramework,
-    CommandResult,
-    macros::{
-        command,
-        group
-    }
-};
-use tokio_postgres::{NoTls, Error};
+use tokio_postgres::{Error, NoTls};
 
-
-//Serenity General framework for commands
+// Serenity General framework for commands
 #[group]
 #[commands(ping, test, uwu, help)]
 struct General;
 
-//Creating the message listener and handler and associated functions.
+// Creating the message handler and associated functions.
 struct MessageHandler;
 
 #[async_trait]
 impl EventHandler for MessageHandler {
+    // Ready gets dispatched by default when the bot starts up, overriding to confirm in CL
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} connected", ready.user.name);
     }
@@ -33,29 +29,32 @@ impl EventHandler for MessageHandler {
 
 #[tokio::main]
 async fn main() {
-    let token = env::var("DISCORD_TOKEN")
-        .expect("No token found");
+    // Setting discord token for the bot to use
+    let token = env::var("DISCORD_TOKEN").expect("No token found");
 
+    // Setting database connection string to be used by the database client
+    // Format: host= <> dbname= <> user= <> password= <>
     let db_connection_string = env::var("DB_CONNECTION")
         .expect("Database connection string not found, environment variable set?");
 
-    let (db_client, db_connection) =
-        tokio_postgres::connect(
-            &db_connection_string
-            ,NoTls)
-            .await
-            .expect("Connection Failed");
+    // Connecting to the PostgreSQL database.
+    let (db_client, db_connection) = tokio_postgres::connect(&db_connection_string, NoTls)
+        .await
+        .expect("Connection Failed");
 
+    // Creating serenity bot framework and its configuration
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP);
 
+    // Building serenity discord bot client using the auth token, framework and message handler defined above
     let mut discord_client = Client::builder(&token)
         .event_handler(MessageHandler)
         .framework(framework)
         .await
         .expect("Error creating client");
 
+    // Starting client
     if let Err(error) = discord_client.start().await {
         println!("Client error {:?}", error)
     }
