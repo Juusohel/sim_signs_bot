@@ -15,25 +15,17 @@ use serenity::framework::standard::{
 };
 use tokio_postgres::{NoTls, Error};
 
-const HELP_MSG: &str = "Hello I am help";
-const HELP_CMD: &str = "!help";
 
+//Serenity General framework for commands
 #[group]
-#[commands(ping, test, uwu)]
+#[commands(ping, test, uwu, help)]
 struct General;
 
+//Creating the message listener and handler and associated functions.
 struct MessageHandler;
 
 #[async_trait]
 impl EventHandler for MessageHandler {
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == HELP_CMD {
-            if let Err(error) = msg.channel_id.say(&ctx.http, HELP_MSG).await {
-                println!("Sending message failed: {:?}", error);
-            }
-        }
-    }
-
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} connected", ready.user.name);
     }
@@ -86,6 +78,13 @@ async fn test(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(ctx, "UwU").await?;
+
+    Ok(())
+}
+
+#[command]
+async fn help(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(ctx, "I am help").await?;
 
     Ok(())
 }
