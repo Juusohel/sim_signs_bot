@@ -42,6 +42,13 @@ async fn main() {
         .await
         .expect("Connection Failed");
 
+    // Moving the actual connection object to its own thread
+    tokio::spawn(async move {
+        if let Err(e) = db_connection.await {
+            eprintln!("connection error: {}", e);
+        }
+    });
+
     // Creating serenity bot framework and its configuration
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
@@ -58,6 +65,11 @@ async fn main() {
     if let Err(error) = discord_client.start().await {
         println!("Client error {:?}", error)
     }
+}
+
+async fn get_user_sign(ctx: &Context, msg:&Message, db_client: tokio_postgres::Client) {
+    let user_id = msg.author.id.as_u64().to_string();
+    let rows = db_client.query("SELECT zodiac_sign FROM user_signs WHERE user_id = $1", &[&user_id]).await;
 }
 
 #[command]
