@@ -106,16 +106,18 @@ async fn whatismysign(ctx: &Context, msg: &Message) -> CommandResult {
     let read = ctx.data.read().await;
     println!("grabbing client"); //debug
     let client = read.get::<ZodiacClient>().expect("PSQL client error").clone();
-
-    let user_id = msg.author.id.as_u64().to_string();
+    let testid = 1;
+    //let user_id = msg.author.id.as_u64().to_string();
     println!("got to the bit before query"); //debug
     let rows = client
         .query( //hardcoded query for testing
-            "SELECT $1::TEXT",
-            &[&"Aries"],
+            "SELECT user_zodiac_sign FROM user_sign WHERE user_id = $1",
+            &[&testid.to_string()],
         )
         .await
         .expect("query error");
+    let value: &str = rows[0].get(0);
+    println!("{}",value);
     println!("finished query"); //debug
 
 
