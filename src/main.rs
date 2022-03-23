@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 use std::env;
 use std::sync::Arc;
 
@@ -11,7 +14,9 @@ use serenity::{
     prelude::*,
 };
 use serenity::futures::future::err;
-use tokio_postgres::{Error, NoTls};
+use serenity::model::connection::Connection;
+use tokio_postgres::{Error, NoTls, Socket};
+use tokio_postgres::tls::NoTlsStream;
 
 //Setting up container for the psql client
 struct ZodiacClient {
@@ -54,11 +59,11 @@ async fn main() {
         .expect("Connection Failed");
 
     // Moving the actual connection object to its own thread
-//    tokio::spawn(async move {
-//        if let Err(e) = db_connection.await {
-//            eprintln!("connection error: {}", e);
-//        }
-//    });
+    tokio::spawn(async move {
+        if let Err(e) = db_connection.await {
+            eprintln!("connection error: {}", e);
+        }
+    });
 
     // Creating serenity bot framework and its configuration
     let framework = StandardFramework::new()
@@ -106,8 +111,8 @@ async fn whatismysign(ctx: &Context, msg: &Message) -> CommandResult {
     println!("got to the bit before query"); //debug
     let rows = client
         .query( //hardcoded query for testing
-            "SELECT * FROM user_signs WHERE user_zodiac_sign=$1",
-            &[&"aries"],
+            "SELECT $1::TEXT",
+            &[&"Aries"],
         )
         .await
         .expect("query error");
