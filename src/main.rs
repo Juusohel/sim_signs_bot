@@ -1,4 +1,5 @@
 use std::env;
+use std::sync::Arc;
 
 use serenity::framework::standard::{
     macros::{command, group},
@@ -9,11 +10,20 @@ use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
+use serenity::futures::future::err;
 use tokio_postgres::{Error, NoTls};
+
+struct ZodiacClient {
+    tokio_postgres: tokio_postgres::Client
+}
+
+impl TypeMapKey for ZodiacClient {
+    type Value = Arc<tokio_postgres::Client>;
+}
 
 // Serenity General framework for commands
 #[group]
-#[commands(ping, test, uwu, help)]
+#[commands(ping, test, uwu, help, whatismysign)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -43,11 +53,11 @@ async fn main() {
         .expect("Connection Failed");
 
     // Moving the actual connection object to its own thread
-    tokio::spawn(async move {
-        if let Err(e) = db_connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
+//    tokio::spawn(async move {
+//        if let Err(e) = db_connection.await {
+//            eprintln!("connection error: {}", e);
+//        }
+//    });
 
     // Creating serenity bot framework and its configuration
     let framework = StandardFramework::new()
@@ -61,17 +71,53 @@ async fn main() {
         .await
         .expect("Error creating client");
 
+    {
+        let mut data = discord_client.data.write().await;
+        data.insert::<ZodiacClient>(Arc::new(db_client));
+    }
+
     // Starting client
     if let Err(error) = discord_client.start().await {
         println!("Client error {:?}", error)
     }
 }
 
-async fn get_user_sign(ctx: &Context, msg:&Message, db_client: tokio_postgres::Client) {
-    let user_id = msg.author.id.as_u64().to_string();
-    let rows = db_client.query("SELECT zodiac_sign FROM user_signs WHERE user_id = $1", &[&user_id]).await;
-}
+// Function to get the thing from database
+//async fn get_user_sign(user_id: UserId, db_client: tokio_postgres::Client) {
+//    let user_id = user_id.as_u64().to_string();
+//    let rows = db_client
+//        .query(
+//            "SELECT zodiac_sign FROM user_signs WHERE user_id = $1",
+//            &[&user_id],
+//        )
+//        .await;
+//    // actually return it
+//}
 
+#[command]
+async fn whatismysign(ctx: &Context, msg: &Message) -> CommandResult {
+    let read = ctx.data.read().await;
+    println!("grabbing client");
+    let client = read.get::<ZodiacClient>().expect("PSQL client error").clone();
+
+    let user_id = msg.author.id.as_u64().to_string();
+    println!("got to the bit before query");
+    let rows = client
+        .query(
+            "SELECT * FROM user_signs WHERE user_zodiac_sign=$1",
+            &[&"aries"],
+        )
+        .await
+        .expect("query error");
+    println!("finished query");
+
+
+    Ok(())
+
+
+
+
+}
 #[command]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(ctx, "Pong!").await?;
@@ -99,3 +145,4 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
+
