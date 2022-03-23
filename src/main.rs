@@ -13,6 +13,7 @@ use serenity::{
 use serenity::futures::future::err;
 use tokio_postgres::{Error, NoTls};
 
+//Setting up container for the psql client
 struct ZodiacClient {
     tokio_postgres: tokio_postgres::Client
 }
@@ -71,6 +72,7 @@ async fn main() {
         .await
         .expect("Error creating client");
 
+    // Creating psql client container
     {
         let mut data = discord_client.data.write().await;
         data.insert::<ZodiacClient>(Arc::new(db_client));
@@ -97,27 +99,26 @@ async fn main() {
 #[command]
 async fn whatismysign(ctx: &Context, msg: &Message) -> CommandResult {
     let read = ctx.data.read().await;
-    println!("grabbing client");
+    println!("grabbing client"); //debug
     let client = read.get::<ZodiacClient>().expect("PSQL client error").clone();
 
     let user_id = msg.author.id.as_u64().to_string();
-    println!("got to the bit before query");
+    println!("got to the bit before query"); //debug
     let rows = client
-        .query(
+        .query( //hardcoded query for testing
             "SELECT * FROM user_signs WHERE user_zodiac_sign=$1",
             &[&"aries"],
         )
         .await
         .expect("query error");
-    println!("finished query");
+    println!("finished query"); //debug
 
 
     Ok(())
 
 
-
-
 }
+
 #[command]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(ctx, "Pong!").await?;
