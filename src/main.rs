@@ -8,19 +8,19 @@ use serenity::framework::standard::{
     macros::{command, group},
     CommandResult, StandardFramework,
 };
+use serenity::futures::future::err;
+use serenity::model::connection::Connection;
 use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
-use serenity::futures::future::err;
-use serenity::model::connection::Connection;
-use tokio_postgres::{Error, NoTls, Socket};
 use tokio_postgres::tls::NoTlsStream;
+use tokio_postgres::{Error, NoTls, Socket};
 
 //Setting up container for the psql client
 struct ZodiacClient {
-    tokio_postgres: tokio_postgres::Client
+    tokio_postgres: tokio_postgres::Client,
 }
 
 impl TypeMapKey for ZodiacClient {
@@ -29,7 +29,7 @@ impl TypeMapKey for ZodiacClient {
 
 // Serenity General framework for commands
 #[group]
-#[commands(ping, test, uwu, help, whatismysign)]
+#[commands(ping, test, uwu, help, sign)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -89,41 +89,40 @@ async fn main() {
     }
 }
 
-// Function to get the thing from database
-//async fn get_user_sign(user_id: UserId, db_client: tokio_postgres::Client) {
-//    let user_id = user_id.as_u64().to_string();
-//    let rows = db_client
-//        .query(
-//            "SELECT zodiac_sign FROM user_signs WHERE user_id = $1",
-//            &[&user_id],
-//        )
-//        .await;
-//    // actually return it
-//}
-
+// Uses the psql client and the user_id to retrieve the stored zodiac sign from the database
 #[command]
-async fn whatismysign(ctx: &Context, msg: &Message) -> CommandResult {
+async fn sign(ctx: &Context, msg: &Message) -> CommandResult {
+    // Pulling in psql client
     let read = ctx.data.read().await;
-    println!("grabbing client"); //debug
-    let client = read.get::<ZodiacClient>().expect("PSQL client error").clone();
-    let testid = 1;
-    //let user_id = msg.author.id.as_u64().to_string();
-    println!("got to the bit before query"); //debug
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+
+    // Querying database for the stored sign
     let rows = client
-        .query( //hardcoded query for testing
+        .query(
             "SELECT user_zodiac_sign FROM user_sign WHERE user_id = $1",
-            &[&testid.to_string()],
+            &[&user_id],
         )
         .await
-        .expect("query error");
-    let value: &str = rows[0].get(0);
-    println!("{}",value);
-    println!("finished query"); //debug
+        .expect("Error querying the database, database set correctly?");
 
+    // If result is not empty, display the stored sign, if empty instruct the user to set it
+    if rows.len() > 0 {
+        let value: &str = rows[0].get(0);
+        let reply_string = format!("<@{}>, your sign is {}", msg.author.id, value);
+        msg.reply(ctx, reply_string).await?;
+    } else {
+        let no_sign_set_string = format!(
+            "<@{}>, your sign is not set! Set your sign with ~set <Sign>",
+            msg.author.id
+        );
+        msg.reply(ctx, no_sign_set_string).await?;
+    }
 
     Ok(())
-
-
 }
 
 #[command]
@@ -153,4 +152,3 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
-
