@@ -176,8 +176,8 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
             )
             .await
             .expect("broken insert");
-        let reply = format!("@{} Your zodiac sign has been set!", msg.author.id);
-        msg.channel_id.say(ctx, reply).await?
+        let reply = format!("<@{}> Your zodiac sign has been set!", msg.author.id);
+        msg.channel_id.say(ctx, reply).await?;
 
     }
 
