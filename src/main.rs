@@ -15,6 +15,7 @@ use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
+
 use tokio_postgres::tls::NoTlsStream;
 use tokio_postgres::{Error, NoTls, Socket};
 
@@ -29,7 +30,7 @@ impl TypeMapKey for ZodiacClient {
 
 // Serenity General framework for commands
 #[group]
-#[commands(ping, test, uwu, help, sign)]
+#[commands(ping, test, uwu, help, sign, setsign)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -111,15 +112,73 @@ async fn sign(ctx: &Context, msg: &Message) -> CommandResult {
 
     // If result is not empty, display the stored sign, if empty instruct the user to set it
     if rows.len() > 0 {
-        let value: &str = rows[0].get(0);
-        let reply_string = format!("<@{}>, your sign is {}", msg.author.id, value);
+        let value: &str = rows[0].get(0); //@TODO capitalize sign
+        let reply_string = format!("<@{}> Your sign is {}!", msg.author.id, value);
         msg.reply(ctx, reply_string).await?;
     } else {
         let no_sign_set_string = format!(
-            "<@{}>, your sign is not set! Set your sign with ~set <Sign>",
+            "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
             msg.author.id
         );
         msg.reply(ctx, no_sign_set_string).await?;
+    }
+
+    Ok(())
+}
+
+// Command that allows a user to set their zodiac sign
+// Parses a parameter from the message and saves it to the database if it's considered a valid sign.
+#[command]
+async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
+    // Pulling in psql client
+    let read = ctx.data.read().await;
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let mut valid: bool = true;
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+    let mut user_new_sign= String::from("default");
+    let user_message = &msg.content.to_lowercase()[9..]; //parsing sign from message
+
+    // Matches the command to the desired zodiac sign and assigns it to the variable
+    match user_message {
+        "aries" => user_new_sign = String::from("aries"),
+        "taurus" => user_new_sign = String::from("taurus"),
+        "gemini" => user_new_sign = String::from("gemini"),
+        "cancer" => user_new_sign = String::from("cancer"),
+        "leo" => user_new_sign = String::from("leo"),
+        "virgo" => user_new_sign = String::from("virgo"),
+        "libra" => user_new_sign = String::from("libra"),
+        "scorpio" => user_new_sign = String::from("scorpio"),
+        "sagittarius" => user_new_sign = String::from("sagittarius"),
+        "capricorn" => user_new_sign = String::from("capricorn"),
+        "aquarius" => user_new_sign = String::from("aquarius"),
+        "pisces" => user_new_sign = String::from("pisces"),
+        _ => {
+            let reply = format!("{} is not a valid sign! Please enter a valid sign.", user_message);
+            valid = false;
+            msg.reply(ctx, reply).await?;
+        }
+    }
+
+    // If the command parameter is considered a acceptable zodiac sign it is saved to the database.
+    // If the user has a previously saved zodiac sign, the new sign gets updated in its place.
+    if valid {
+        let _statement = client
+            .execute(
+            "INSERT INTO user_sign (user_id, user_zodiac_sign)
+            VALUES ($1, $2)
+            ON CONFLICT (user_id)
+            DO
+            UPDATE SET user_zodiac_sign = EXCLUDED.user_zodiac_sign",
+            &[&user_id, &user_new_sign]
+            )
+            .await
+            .expect("broken insert");
+        let reply = format!("@{} Your zodiac sign has been set!", msg.author.id);
+        msg.channel_id.say(ctx, reply).await?
+
     }
 
     Ok(())
