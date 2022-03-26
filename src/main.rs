@@ -30,7 +30,7 @@ impl TypeMapKey for ZodiacClient {
 
 // Serenity General framework for commands
 #[group]
-#[commands(ping, test, uwu, help, sign, setsign)]
+#[commands(uwu, help, sign, setsign, car, track, compatibility, monthly)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -112,7 +112,7 @@ async fn sign(ctx: &Context, msg: &Message) -> CommandResult {
 
     // If result is not empty, display the stored sign, if empty instruct the user to set it
     if rows.len() > 0 {
-        let value: &str = rows[0].get(0); //@TODO capitalize sign
+        let value: &str = rows[0].get(0);
         let reply_string = format!("<@{}> Your sign is {}!", msg.author.id, value);
         msg.reply(ctx, reply_string).await?;
     } else {
@@ -138,7 +138,7 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
         .clone();
     let mut valid: bool = true;
     let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
-    let mut user_new_sign= String::from("default");
+    let mut user_new_sign = String::from("default");
     let user_message = &msg.content.to_lowercase()[9..]; //parsing sign from message
 
     // Matches the command to the desired zodiac sign and assigns it to the variable
@@ -156,7 +156,10 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
         "aquarius" => user_new_sign = String::from("aquarius"),
         "pisces" => user_new_sign = String::from("pisces"),
         _ => {
-            let reply = format!("{} is not a valid sign! Please enter a valid sign.", user_message);
+            let reply = format!(
+                "{} is not a valid sign! Please enter a valid sign.",
+                user_message
+            );
             valid = false;
             msg.reply(ctx, reply).await?;
         }
@@ -167,33 +170,55 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
     if valid {
         let _statement = client
             .execute(
-            "INSERT INTO user_sign (user_id, user_zodiac_sign)
+                "INSERT INTO user_sign (user_id, user_zodiac_sign)
             VALUES ($1, $2)
             ON CONFLICT (user_id)
             DO
             UPDATE SET user_zodiac_sign = EXCLUDED.user_zodiac_sign",
-            &[&user_id, &user_new_sign]
+                &[&user_id, &user_new_sign],
             )
             .await
             .expect("broken insert");
         let reply = format!("<@{}> Your zodiac sign has been set!", msg.author.id);
         msg.channel_id.say(ctx, reply).await?;
-
     }
 
     Ok(())
 }
 
 #[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "Pong!").await?;
+async fn car(ctx: &Context, msg: &Message) -> CommandResult {
+    // Select a car based on zodiac sign and have fun reason why that specific car.
+    // Maybe pull from text file?
+    //
+    // Check if user has zodiac set, if so get text based on the zodiac.
 
     Ok(())
 }
 
 #[command]
-async fn test(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "Hello test reply").await?;
+async fn track(ctx: &Context, msg: &Message) -> CommandResult {
+    // Select track based on zodiac sign and why
+    // Grab text from file so as to not clutter code
+    // Check if user has zodiac set, if so get text based on the sign
+
+    Ok(())
+}
+
+#[command]
+async fn compatibility(ctx: &Context, msg: &Message) -> CommandResult {
+    // Parse user from the command text
+    // Check the 2 zodiacs and select a compatibility text based on the pairing
+    // if running out of time, determine level of compatibility 1-10 and select text based on that
+    // texts have to be more generic though
+
+    Ok(())
+}
+
+#[command]
+async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
+    // check if user has horoscope set, if so select monthly horoscope text based on it
+    // same as the others.
 
     Ok(())
 }
@@ -208,6 +233,6 @@ async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(ctx, "I am help").await?;
-
+    // ADD PROPER HELP LATER
     Ok(())
 }
