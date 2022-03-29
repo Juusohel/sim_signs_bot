@@ -145,18 +145,18 @@ async fn set(ctx: &Context, msg: &Message) -> CommandResult {
 
     // Matches the command to the desired zodiac sign and assigns it to the variable
     match user_message {
-        "aries" => user_new_sign = String::from("aries"),
-        "taurus" => user_new_sign = String::from("taurus"),
-        "gemini" => user_new_sign = String::from("gemini"),
-        "cancer" => user_new_sign = String::from("cancer"),
-        "leo" => user_new_sign = String::from("leo"),
-        "virgo" => user_new_sign = String::from("virgo"),
-        "libra" => user_new_sign = String::from("libra"),
-        "scorpio" => user_new_sign = String::from("scorpio"),
-        "sagittarius" => user_new_sign = String::from("sagittarius"),
-        "capricorn" => user_new_sign = String::from("capricorn"),
-        "aquarius" => user_new_sign = String::from("aquarius"),
-        "pisces" => user_new_sign = String::from("pisces"),
+        "aries" => user_new_sign = String::from("Aries"),
+        "taurus" => user_new_sign = String::from("Taurus"),
+        "gemini" => user_new_sign = String::from("Gemini"),
+        "cancer" => user_new_sign = String::from("Cancer"),
+        "leo" => user_new_sign = String::from("Leo"),
+        "virgo" => user_new_sign = String::from("Virgo"),
+        "libra" => user_new_sign = String::from("Libra"),
+        "scorpio" => user_new_sign = String::from("Scorpio"),
+        "sagittarius" => user_new_sign = String::from("Sagittarius"),
+        "capricorn" => user_new_sign = String::from("Capricorn"),
+        "aquarius" => user_new_sign = String::from("Aquarius"),
+        "pisces" => user_new_sign = String::from("Pisces"),
         _ => {
             let reply = format!(
                 "{} is not a valid sign! Please enter a valid sign.",
@@ -210,7 +210,7 @@ async fn car(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/cars/{}.txt",value);
+        let filepath = format!("content/cars/{}.txt",value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
         msg.channel_id.send_message(ctx, |message| {
@@ -255,7 +255,7 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/tracks/{}.txt",value);
+        let filepath = format!("content/tracks/{}.txt",value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
         msg.channel_id.send_message(ctx, |message| {
@@ -302,7 +302,7 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/monthly/{}.txt",value);
+        let filepath = format!("content/monthly/{}.txt",value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
         msg.channel_id.send_message(ctx, |message| {
