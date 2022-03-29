@@ -305,7 +305,15 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
         let filepath = format!("content/monthly/{}.txt",value);
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.say(ctx, zodiac_contents).await?;
+        msg.channel_id.send_message(ctx, |message| {
+            message
+                .content(format!("<@{}> the stars have spoken, your racing monthly horoscope is:", msg.author.id))
+                .embed(|embed|{
+                    embed.title(value)
+                        .description(zodiac_contents)
+                        .color(Color::DARK_BLUE)
+                })
+        }).await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
