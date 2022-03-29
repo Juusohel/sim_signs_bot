@@ -30,7 +30,7 @@ impl TypeMapKey for ZodiacClient {
 
 // Serenity General framework for commands
 #[group]
-#[commands(uwu, help, sign, setsign, car, track, compatibility, monthly)]
+#[commands(uwu, help, sign, set, car, track, compatibility, monthly, deleteme)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -129,7 +129,7 @@ async fn sign(ctx: &Context, msg: &Message) -> CommandResult {
 // Command that allows a user to set their zodiac sign
 // Parses a parameter from the message and saves it to the database if it's considered a valid sign.
 #[command]
-async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
+async fn set(ctx: &Context, msg: &Message) -> CommandResult {
     // Pulling in psql client
     let read = ctx.data.read().await;
     let client = read
@@ -139,7 +139,7 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
     let mut valid: bool = true;
     let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
     let mut user_new_sign = String::from("default");
-    let user_message = &msg.content.to_lowercase()[9..]; //parsing sign from message
+    let user_message = &msg.content.to_lowercase()[5..]; //parsing sign from message
 
     // Matches the command to the desired zodiac sign and assigns it to the variable
     match user_message {
@@ -320,5 +320,28 @@ async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(ctx, "I am help").await?;
     // ADD PROPER HELP LATER
+    Ok(())
+}
+
+#[command]
+async fn deleteme(ctx: &Context, msg: &Message) -> CommandResult {
+    // Pulling in psql client
+    let read = ctx.data.read().await;
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+
+    let _statement = client
+        .execute(
+            "DELETE FROM user_sign WHERE user_id = $1",
+            &[&user_id],
+        )
+        .await
+        .expect("broken insert");
+    let reply = format!("<@{}> You have been deleted!", msg.author.id);
+    msg.channel_id.say(ctx, reply).await?;
+
     Ok(())
 }
