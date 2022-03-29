@@ -70,7 +70,7 @@ async fn main() {
 
     // Creating serenity bot framework and its configuration
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("~"))
+        .configure(|c| c.prefix("~").case_insensitivity(true))
         .group(&GENERAL_GROUP);
 
     // Building serenity discord bot client using the auth token, framework and message handler defined above
