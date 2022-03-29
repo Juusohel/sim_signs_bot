@@ -1,29 +1,23 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-
-use std::{env, fs};
 use std::sync::Arc;
+use std::{env, fs};
 
 use serenity::framework::standard::{
     macros::{command, group},
     CommandResult, StandardFramework,
 };
-use serenity::futures::future::err;
-use serenity::model::connection::Connection;
+
+use serenity::utils::Color;
 use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
-use serenity::model::channel::Embed;
-use serenity::utils::Color;
 
-use tokio_postgres::tls::NoTlsStream;
-use tokio_postgres::{Error, NoTls, Socket};
+use tokio_postgres::NoTls;
 
 //Setting up container for the psql client
 struct ZodiacClient {
-    tokio_postgres: tokio_postgres::Client,
+    _tokio_postgres: tokio_postgres::Client,
 }
 
 impl TypeMapKey for ZodiacClient {
@@ -210,18 +204,24 @@ async fn car(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/cars/{}.txt",value.to_lowercase());
+        let filepath = format!("content/cars/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.send_message(ctx, |message| {
-            message
-                .content(format!("<@{}> the stars have spoken and you should choose the following car!", msg.author.id))
-                .embed(|embed|{
-                    embed.title(value)
-                        .description(zodiac_contents)
-                        .color(Color::DARK_BLUE)
-                })
-        }).await?;
+        msg.channel_id
+            .send_message(ctx, |message| {
+                message
+                    .content(format!(
+                        "<@{}> the stars have spoken and you should choose the following car!",
+                        msg.author.id
+                    ))
+                    .embed(|embed| {
+                        embed
+                            .title(value)
+                            .description(zodiac_contents)
+                            .color(Color::DARK_BLUE)
+                    })
+            })
+            .await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
@@ -255,18 +255,24 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/tracks/{}.txt",value.to_lowercase());
+        let filepath = format!("content/tracks/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.send_message(ctx, |message| {
-            message
-                .content(format!("<@{}> the stars have spoken and you should race on the following track!", msg.author.id))
-                .embed(|embed|{
-                    embed.title(value)
-                        .description(zodiac_contents)
-                        .color(Color::DARK_BLUE)
-                })
-        }).await?;
+        msg.channel_id
+            .send_message(ctx, |message| {
+                message
+                    .content(format!(
+                        "<@{}> the stars have spoken and you should race on the following track!",
+                        msg.author.id
+                    ))
+                    .embed(|embed| {
+                        embed
+                            .title(value)
+                            .description(zodiac_contents)
+                            .color(Color::DARK_BLUE)
+                    })
+            })
+            .await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
@@ -275,10 +281,8 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
         msg.reply(ctx, no_sign_set_string).await?;
     }
 
-
     Ok(())
 }
-
 
 #[command]
 async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
@@ -302,18 +306,24 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
     // If result is not empty, take the stored sign and pick a file based on it.
     if rows.len() > 0 {
         let value: &str = rows[0].get(0);
-        let filepath = format!("content/monthly/{}.txt",value.to_lowercase());
+        let filepath = format!("content/monthly/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.send_message(ctx, |message| {
-            message
-                .content(format!("<@{}> the stars have spoken, your racing monthly horoscope is:", msg.author.id))
-                .embed(|embed|{
-                    embed.title(value)
-                        .description(zodiac_contents)
-                        .color(Color::DARK_BLUE)
-                })
-        }).await?;
+        msg.channel_id
+            .send_message(ctx, |message| {
+                message
+                    .content(format!(
+                        "<@{}> the stars have spoken, your racing monthly horoscope is:",
+                        msg.author.id
+                    ))
+                    .embed(|embed| {
+                        embed
+                            .title(value)
+                            .description(zodiac_contents)
+                            .color(Color::DARK_BLUE)
+                    })
+            })
+            .await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
@@ -321,7 +331,6 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
         );
         msg.reply(ctx, no_sign_set_string).await?;
     }
-
 
     Ok(())
 }
@@ -351,10 +360,7 @@ async fn deleteme(ctx: &Context, msg: &Message) -> CommandResult {
     let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
 
     let _statement = client
-        .execute(
-            "DELETE FROM user_sign WHERE user_id = $1",
-            &[&user_id],
-        )
+        .execute("DELETE FROM user_sign WHERE user_id = $1", &[&user_id])
         .await
         .expect("broken insert");
     let reply = format!("<@{}> You have been deleted!", msg.author.id);
