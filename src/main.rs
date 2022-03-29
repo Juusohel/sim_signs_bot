@@ -15,6 +15,8 @@ use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
+use serenity::model::channel::Embed;
+use serenity::utils::Color;
 
 use tokio_postgres::tls::NoTlsStream;
 use tokio_postgres::{Error, NoTls, Socket};
@@ -30,7 +32,7 @@ impl TypeMapKey for ZodiacClient {
 
 // Serenity General framework for commands
 #[group]
-#[commands(uwu, help, sign, set, car, track, compatibility, monthly, deleteme)]
+#[commands(uwu, help, sign, set, car, track, monthly, deleteme)]
 struct General;
 
 // Creating the message handler and associated functions.
@@ -211,7 +213,15 @@ async fn car(ctx: &Context, msg: &Message) -> CommandResult {
         let filepath = format!("content/cars/{}.txt",value);
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.say(ctx, zodiac_contents).await?;
+        msg.channel_id.send_message(ctx, |message| {
+            message
+                .content(format!("<@{}> the stars have spoken and you should choose the following car!", msg.author.id))
+                .embed(|embed|{
+                    embed.title(value)
+                        .description(zodiac_contents)
+                        .color(Color::DARK_BLUE)
+                })
+        }).await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
@@ -248,7 +258,15 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
         let filepath = format!("content/tracks/{}.txt",value);
         let zodiac_contents = fs::read_to_string(filepath)?;
 
-        msg.channel_id.say(ctx, zodiac_contents).await?;
+        msg.channel_id.send_message(ctx, |message| {
+            message
+                .content(format!("<@{}> the stars have spoken and you should race on the following track!", msg.author.id))
+                .embed(|embed|{
+                    embed.title(value)
+                        .description(zodiac_contents)
+                        .color(Color::DARK_BLUE)
+                })
+        }).await?;
     } else {
         let no_sign_set_string = format!(
             "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
@@ -261,15 +279,6 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-#[command]
-async fn compatibility(ctx: &Context, msg: &Message) -> CommandResult {
-    // Parse user from the command text
-    // Check the 2 zodiacs and select a compatibility text based on the pairing
-    // if running out of time, determine level of compatibility 1-10 and select text based on that
-    // texts have to be more generic though
-
-    Ok(())
-}
 
 #[command]
 async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
