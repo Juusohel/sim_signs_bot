@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
-use std::env;
+use std::{env, fs};
 use std::sync::Arc;
 
 use serenity::framework::standard::{
@@ -188,19 +188,75 @@ async fn setsign(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn car(ctx: &Context, msg: &Message) -> CommandResult {
-    // Select a car based on zodiac sign and have fun reason why that specific car.
-    // Maybe pull from text file?
-    //
-    // Check if user has zodiac set, if so get text based on the zodiac.
+    // Pulling in psql client
+    let read = ctx.data.read().await;
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+
+    // Querying database for the stored sign
+    let rows = client
+        .query(
+            "SELECT user_zodiac_sign FROM user_sign WHERE user_id = $1",
+            &[&user_id],
+        )
+        .await
+        .expect("Error querying the database, database set correctly?");
+
+    // If result is not empty, take the stored sign and pick a file based on it.
+    if rows.len() > 0 {
+        let value: &str = rows[0].get(0);
+        let filepath = format!("content/cars/{}.txt",value);
+        let zodiac_contents = fs::read_to_string(filepath)?;
+
+        msg.channel_id.say(ctx, zodiac_contents).await?;
+    } else {
+        let no_sign_set_string = format!(
+            "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
+            msg.author.id
+        );
+        msg.reply(ctx, no_sign_set_string).await?;
+    }
 
     Ok(())
 }
 
 #[command]
 async fn track(ctx: &Context, msg: &Message) -> CommandResult {
-    // Select track based on zodiac sign and why
-    // Grab text from file so as to not clutter code
-    // Check if user has zodiac set, if so get text based on the sign
+    // Pulling in psql client
+    let read = ctx.data.read().await;
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+
+    // Querying database for the stored sign
+    let rows = client
+        .query(
+            "SELECT user_zodiac_sign FROM user_sign WHERE user_id = $1",
+            &[&user_id],
+        )
+        .await
+        .expect("Error querying the database, database set correctly?");
+
+    // If result is not empty, take the stored sign and pick a file based on it.
+    if rows.len() > 0 {
+        let value: &str = rows[0].get(0);
+        let filepath = format!("content/tracks/{}.txt",value);
+        let zodiac_contents = fs::read_to_string(filepath)?;
+
+        msg.channel_id.say(ctx, zodiac_contents).await?;
+    } else {
+        let no_sign_set_string = format!(
+            "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
+            msg.author.id
+        );
+        msg.reply(ctx, no_sign_set_string).await?;
+    }
+
 
     Ok(())
 }
@@ -217,8 +273,38 @@ async fn compatibility(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
-    // check if user has horoscope set, if so select monthly horoscope text based on it
-    // same as the others.
+    // Pulling in psql client
+    let read = ctx.data.read().await;
+    let client = read
+        .get::<ZodiacClient>()
+        .expect("PSQL client error")
+        .clone();
+    let user_id = msg.author.id.as_u64().to_string(); // User_ID to be used as the key
+
+    // Querying database for the stored sign
+    let rows = client
+        .query(
+            "SELECT user_zodiac_sign FROM user_sign WHERE user_id = $1",
+            &[&user_id],
+        )
+        .await
+        .expect("Error querying the database, database set correctly?");
+
+    // If result is not empty, take the stored sign and pick a file based on it.
+    if rows.len() > 0 {
+        let value: &str = rows[0].get(0);
+        let filepath = format!("content/monthly/{}.txt",value);
+        let zodiac_contents = fs::read_to_string(filepath)?;
+
+        msg.channel_id.say(ctx, zodiac_contents).await?;
+    } else {
+        let no_sign_set_string = format!(
+            "<@{}> Your sign is not set! Set your sign with ~set <Sign>",
+            msg.author.id
+        );
+        msg.reply(ctx, no_sign_set_string).await?;
+    }
+
 
     Ok(())
 }
