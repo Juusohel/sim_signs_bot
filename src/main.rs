@@ -86,6 +86,28 @@ async fn main() {
     }
 }
 
+// Finds
+async fn find_image_url(sign: &str) -> String {
+    let image_url;
+    match sign {
+        "aries" => image_url = String::from("https://i.imgur.com/dAuAGgd.png"),
+        "taurus" => image_url = String::from("https://i.imgur.com/qK6mLmC.png"),
+        "gemini" => image_url = String::from("https://i.imgur.com/B3SMMZx.png"),
+        "cancer" => image_url = String::from("https://i.imgur.com/Xwcnwdp.png"),
+        "leo" => image_url = String::from("https://i.imgur.com/SylDKH4.png"),
+        "virgo" => image_url = String::from("https://i.imgur.com/43fQB8O.png"),
+        "libra" => image_url = String::from("https://i.imgur.com/fd0c1D6.png"),
+        "scorpio" => image_url = String::from("https://i.imgur.com/96Ggy0a.png"),
+        "sagittarius" => image_url = String::from("https://i.imgur.com/28gC6XX.png"),
+        "capricorn" => image_url = String::from("https://i.imgur.com/fULgjr3.png"),
+        "aquarius" => image_url = String::from("https://i.imgur.com/6WhFiEf.png"),
+        "pisces" => image_url = String::from("https://i.imgur.com/wBzGPSf.png"),
+        _ => image_url = String::from("https://cdn.discordapp.com/attachments/729394298860208198/958502362526384128/unknown.png") // Should be unreachable as invalid signs not allowed in database
+
+    }
+    image_url
+}
+
 // Uses the psql client and the user_id to retrieve the stored zodiac sign from the database
 #[command]
 async fn sign(ctx: &Context, msg: &Message) -> CommandResult {
@@ -206,6 +228,7 @@ async fn car(ctx: &Context, msg: &Message) -> CommandResult {
         let value: &str = rows[0].get(0);
         let filepath = format!("content/cars/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
+        let image_url = find_image_url(&value.to_lowercase()).await;
 
         msg.channel_id
             .send_message(ctx, |message| {
@@ -219,6 +242,7 @@ async fn car(ctx: &Context, msg: &Message) -> CommandResult {
                             .title(value)
                             .description(zodiac_contents)
                             .color(Color::DARK_BLUE)
+                            .image(image_url)
                     })
             })
             .await?;
@@ -257,6 +281,7 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
         let value: &str = rows[0].get(0);
         let filepath = format!("content/tracks/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
+        let image_url = find_image_url(&value.to_lowercase()).await;
 
         msg.channel_id
             .send_message(ctx, |message| {
@@ -270,6 +295,7 @@ async fn track(ctx: &Context, msg: &Message) -> CommandResult {
                             .title(value)
                             .description(zodiac_contents)
                             .color(Color::DARK_BLUE)
+                            .image(image_url)
                     })
             })
             .await?;
@@ -308,6 +334,7 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
         let value: &str = rows[0].get(0);
         let filepath = format!("content/monthly/{}.txt", value.to_lowercase());
         let zodiac_contents = fs::read_to_string(filepath)?;
+        let image_url = find_image_url(&value.to_lowercase()).await;
 
         msg.channel_id
             .send_message(ctx, |message| {
@@ -321,6 +348,7 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
                             .title(value)
                             .description(zodiac_contents)
                             .color(Color::DARK_BLUE)
+                            .image(image_url)
                     })
             })
             .await?;
