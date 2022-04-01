@@ -8,13 +8,13 @@ The bot utilizes a database connection to the database to store a zodiac sign fo
 The bot can be easily extended to do more with the information, especially text based
 
 
-##Configuration
-######Environment Variables
+## Configuration
+###### Environment Variables
 - `DISCORD_TOKEN` - Discord token for the bot
 - `DB_CONNECTION` - Connection string to the database used by the bot
   - `host=<> dbname=<> user=<> password=<>`
 
-##Requirements and dependencies
+## Requirements and dependencies
 #### Rust toolchain
  - Easiest way to install the rust toolchain is with rustup
    - https://www.rust-lang.org/tools/install
@@ -32,6 +32,7 @@ The bot can be easily extended to do more with the information, especially text 
    - https://github.com/sfackler/rust-postgres
    
     
-##Acknowledgements
+## Acknowledgements
 Thanks to https://github.com/owlgee for the art
+
 Thanks to Danny and Lena for help with the monthly horoscope writing
