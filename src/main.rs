@@ -372,8 +372,20 @@ async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.channel_id.say(ctx, "I am help").await?;
-    // ADD PROPER HELP LATER
+    let help_message = fs::read_to_string("content/help.txt")?;
+
+    msg.channel_id
+        .send_message(ctx, |help| {
+            help.content(format!("<@{}>", msg.author.id))
+                .embed(|embed| {
+                    embed
+                        .title("Help")
+                        .description(help_message)
+                        .color(Color::LIGHT_GREY)
+                        .image("https://i.imgur.com/j0ROjd9.png")
+                })
+        })
+        .await?;
     Ok(())
 }
 
