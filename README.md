@@ -1,4 +1,4 @@
-#Sim Signs Sim Racing Astrology Bot
+# Sim Signs Sim Racing Astrology Bot
 A discord bot to enhance your connection to the stars, built for sim racers
 (Built as an april fool's joke)
 
