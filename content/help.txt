@@ -1,1 +1,23 @@
-I am help
+The following commands are available to use to enhance your connection to the stars!
+
+**The current command prefix is `~`**
+
+**Set** `zodiac` - Sets your zodiac sign and saves it. (Overrides any previously set zodiac sign)
+
+**Sign** - Displays your set zodiac sign
+
+**Car** - What car are you most connected to? Let the stars decide!
+
+**Track** - Feeling lost? Let the stars guide you to the right track!
+
+**Monthly** - See what the stars have in store for you!
+
+**DeleteMe** - Remove your stored zodiac sign from the bot's database
+
+**uwu** - uwu
+
+**Help** - Displays this message!
+
+
+
+

@@ -365,7 +365,7 @@ async fn monthly(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn uwu(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "UwU").await?;
+    msg.reply(ctx, "uwu").await?;
 
     Ok(())
 }
